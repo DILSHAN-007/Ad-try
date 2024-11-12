@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Scissors Game</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            background-color: #1c1c1c;
+            color: #f5f5f5;
+            overflow: hidden;
+            user-select: none;
+        }
+        .score-container {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 24px;
+            display: flex;
+            gap: 20px;
+        }
+        .player-score, .computer-score {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 50%;
+            padding: 20px;
+            box-sizing: border-box;
+            height: 100%;
+        }
+        .player-container {
+            background: linear-gradient(135deg, #2193b0, #6dd5ed);
+            color: #ffffff;
+            border-left: 3px solid #444;
+        }
+        .computer-container {
+            background: linear-gradient(135deg, #ff512f, #dd2476);
+            color: #ffffff;
+            border-right: 3px solid #444;
+        }
+        .choices {
+            margin: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .choices button {
+            padding: 20px 30px;
+            font-size: 22px;
+            margin: 10px;
+            cursor: pointer;
+            border: 2px solid #333;
+            border-radius: 12px;
+            transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
+            background-color: #333;
+            color: #f5f5f5;
+        }
+        .choices button:focus {
+            outline: none;
+            box-shadow: 0 0 15px 3px rgba(255, 255, 255, 0.6);
+        }
+        .choices button:hover {
+            transform: scale(1.15);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            background-color: #555;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 26px;
+            font-weight: bold;
+            text-align: center;
+        }
+        #restart {
+            margin-top: 30px;
+            padding: 15px 25px;
+            font-size: 20px;
+            cursor: pointer;
+            border: 2px solid #ff6347;
+            border-radius: 10px;
+            background-color: transparent;
+            color: #ff6347;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        #restart:hover {
+            background-color: #ff6347;
+            color: #ffffff;
+        }
+        .animate-choice {
+            animation: bounce 0.5s ease-in-out;
+        }
+        @keyframes bounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.25); }
+            100% { transform: scale(1); }
+        }
+        #countdown {
+            font-size: 34px;
+            margin-top: 20px;
+            animation: countdownFade 1s linear;
+            text-align: center;
+        }
+        @keyframes countdownFade {
+            0% { opacity: 0; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        #ready {
+            margin-bottom: 20px;
+            padding: 15px 25px;
+            font-size: 20px;
+            cursor: pointer;
+            border: 2px solid #00bcd4;
+            border-radius: 10px;
+            background-color: #00bcd4;
+            color: #fff;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        #ready:hover {
+            background-color: #008c9e;
+            box-shadow: 0 8px 20px rgba(0, 188, 212, 0.5);
+        }
+        .ad-container {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+        }
+    </style>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+</head>
+<body>
+    <div class="score-container">
+        <div class="computer-score">Computer: 0</div>
+        <div class="player-score">Player: 0</div>
+    </div>
+    <div class="ad-container">
+        <ins class="adsbygoogle"
+             style="display:inline-block;width:320px;height:100px"
+             data-ad-client="ca-pub-3940256099942544"
+             data-ad-slot="1234567890"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+    <div class="container computer-container">
+        <h1>Computer's Turn</h1>
+        <div id="computer-result" aria-live="polite"></div>
+    </div>
+    <div class="container player-container">
+        <button id="ready" onclick="startCountdown()">Ready</button>
+        <div id="countdown"></div>
+        <div class="choices">
+            <button onclick="setPlayerChoice('rock')" id="rock" aria-label="Rock" disabled>Rock</button>
+            <button onclick="setPlayerChoice('paper')" id="paper" aria-label="Paper" disabled>Paper</button>
+            <button onclick="setPlayerChoice('scissors')" id="scissors" aria-label="Scissors" disabled>Scissors</button>
+        </div>
+        <div id="result" aria-live="polite"></div>
+        <button id="restart" onclick="restartGame()">Restart Game</button>
+    </div>
+
+    <script>
+        let playerScore = 0;
+        let computerScore = 0;
+        let playerChoice = '';
+        let computerChoice = '';
+
+        function startCountdown() {
+            let countdown = 3;
+            document.getElementById('countdown').innerText = countdown;
+
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                document.getElementById('countdown').innerText = countdown;
+
+                if (countdown === 0) {
+                    clearInterval(countdownInterval);
+                    enableChoices();
+                    document.getElementById('countdown').innerText = 'Select your choice now!';
+                    const choices = ['rock', 'paper', 'scissors'];
+                    computerChoice = choices[Math.floor(Math.random() * choices.length)];
+                    setTimeout(() => {
+                        if (playerChoice) {
+                            showChoices();
+                            setTimeout(() => {
+                                showResult();
+                            }, 1000);
+                        } else {
+                            document.getElementById('result').innerText = 'You did not make a choice!';
+                            disableChoices();
+                        }
+                    }, 1000);
+                }
+            }, 1000);
+        }
+
+        function enableChoices() {
+            document.getElementById('rock').disabled = false;
+            document.getElementById('paper').disabled = false;
+            document.getElementById('scissors').disabled = false;
+        }
+
+        function disableChoices() {
+            document.getElementById('rock').disabled = true;
+            document.getElementById('paper').disabled = true;
+            document.getElementById('scissors').disabled = true;
+        }
+
+        function setPlayerChoice(choice) {
+            playerChoice = choice;
+        }
+
+        function showChoices() {
+            document.getElementById('computer-result').innerText = `Computer chose ${computerChoice}`;
+            document.getElementById('result').innerText = `You chose ${playerChoice}`;
+        }
+
+        function showResult() {
+            let result = '';
+
+            if (playerChoice === computerChoice) {
+                result = `It's a tie! You both chose ${playerChoice}.`;
+            } else if (
+                (playerChoice === 'rock' && computerChoice === 'scissors') ||
+                (playerChoice === 'paper' && computerChoice === 'rock') ||
+                (playerChoice === 'scissors' && computerChoice === 'paper')
+            ) {
+                result = `You win! ${playerChoice} beats ${computerChoice}.`;
+                playerScore++;
+            } else {
+                result = `You lose! ${computerChoice} beats ${playerChoice}.`;
+                computerScore++;
+            }
+
+            document.getElementById('result').innerText = result;
+            document.querySelector('.player-score').innerText = `Player: ${playerScore}`;
+            document.querySelector('.computer-score').innerText = `Computer: ${computerScore}`;
+            animateChoice(playerChoice);
+            disableChoices();
+        }
+
+        function animateChoice(choice) {
+            const button = document.getElementById(choice);
+            button.classList.add('animate-choice');
+            setTimeout(() => {
+                button.classList.remove('animate-choice');
+            }, 500);
+        }
+
+        function restartGame() {
+            playerScore = 0;
+            computerScore = 0;
+            playerChoice = '';
+            computerChoice = '';
+            document.getElementById('result').innerText = '';
+            document.getElementById('computer-result').innerText = '';
+            document.querySelector('.player-score').innerText = `Player: ${playerScore}`;
+            document.querySelector('.computer-score').innerText = `Computer: ${computerScore}`;
+            document.getElementById('countdown').innerText = '';
+            disableChoices();
+        }
+    </script>
+</body>
+</html>
